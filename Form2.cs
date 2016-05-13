@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -7,7 +8,9 @@ using System.Data.SqlClient;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -26,18 +29,35 @@ namespace Otomasyon
         {
             try
             {
-                conn.Open();
                 //myCommand.CommandText = "SELECT MAX(FormID) FROM tbl_Form";
                 //int maxId = Convert.ToInt32(myCommand.ExecuteScalar());
-                SqlCommand kmt = new SqlCommand("Insert into  TblSorun(Tarih,UnvanId,AcilisSifresi,OdaNumarasi,Dahili,Sorun,Cozum,AdSoyad) values ('" + TxtDate.Text + "','" + CmbUnvan.SelectedValue + "','" + TxtAcilisSifresi.Text + "','" + TxtOdaNo.Text + "','" + TxtDahili.Text + "','" + TxtSorun.Text + "','" + TxtSorunCozum.Text + "','" + TxtAdSoyad.Text + "' )", conn);
-                kmt.ExecuteNonQuery();
+                //SqlCommand kmt = new SqlCommand("Insert into  TblSorun(Tarih,UnvanId,AcilisSifresi,OdaNumarasi,Dahili,Sorun,Cozum,AdSoyad) values ('" + TxtDate.Text + "','" + CmbUnvan.SelectedValue + "','" + TxtAcilisSifresi.Text + "','" + TxtOdaNo.Text + "','" + TxtDahili.Text + "','" + TxtSorun.Text + "','" + TxtSorunCozum.Text + "','" + TxtAdSoyad.Text + "' )", conn);
+                //kmt.ExecuteNonQuery();
+                //conn.Close();
+                //DatagridYenile();
+                //Temizle();
+                conn.Open();
+                string strUpdate = "insert into  TblSorun (Tarih,UnvanId,AcilisSifresi,OdaNumarasi,Dahili,Sorun,Cozum,AdSoyad) values (@Tarih,@UnvanId,@AcilisSifresi,@OdaNumarasi,@Dahili,@Sorun,@Cozum,@AdSoyad)";
+                SqlCommand cmdekle = new SqlCommand(strUpdate, conn);
+                cmdekle.Parameters.AddWithValue("@Tarih", TxtDate.Text);
+                cmdekle.Parameters.AddWithValue("@UnvanId", CmbUnvan.SelectedValue);
+                cmdekle.Parameters.AddWithValue("@AcilisSifresi", TxtAcilisSifresi.Text);
+                cmdekle.Parameters.AddWithValue("@OdaNumarasi", TxtOdaNo.Text);
+                cmdekle.Parameters.AddWithValue("@Dahili", TxtDahili.Text);
+                cmdekle.Parameters.AddWithValue("@Sorun", TxtSorun.Text);
+                cmdekle.Parameters.AddWithValue("@Cozum", TxtSorunCozum.Text);
+                cmdekle.Parameters.AddWithValue("@AdSoyad", TxtAdSoyad.Text);
+                cmdekle.ExecuteNonQuery();
                 conn.Close();
                 DatagridYenile();
                 Temizle();
             }
+
             catch (Exception)
             {
+                conn.Close();
                 throw;
+
             }
         }
         private void Temizle()
@@ -55,7 +75,7 @@ namespace Otomasyon
             try
             {
                 conn.Open();
-                DataTable tbl = new DataTable();
+                System.Data.DataTable tbl = new System.Data.DataTable();
                 SqlDataAdapter adptr = new SqlDataAdapter("select TblSorun.Id,UnvanAdi,Tarih,Sorun,Dahili,Cozum,AdSoyad from TblSorun inner join TblUnvan on TblSorun.UnvanId=TblUnvan.ID ", conn);
                 adptr.Fill(tbl);
                 conn.Close();
@@ -73,7 +93,7 @@ namespace Otomasyon
             try
             {
                 conn.Open();
-                DataTable tblUnvan = new DataTable();
+                System.Data.DataTable tblUnvan = new System.Data.DataTable();
                 SqlDataAdapter adap = new SqlDataAdapter("Select ID,UnvanAdi from TblUnvan ", conn);
                 adap.Fill(tblUnvan);
                 conn.Close();
@@ -121,7 +141,7 @@ namespace Otomasyon
             try
             {
                 conn.Open();
-                DataTable tbl = new DataTable();
+                System.Data.DataTable tbl = new System.Data.DataTable();
                 SqlDataAdapter adp = new SqlDataAdapter("Update TblSorun set Cozum='" + TxtSorunCozum.Text + "' ,Tarih='" + TxtDate.Text + "' ,OdaNumarasi='" + TxtOdaNo.Text + "',Dahili='" + TxtDahili.Text + "',Sorun='" + TxtSorun.Text + "',UnvanId='" + CmbUnvan.SelectedValue + "',AdSoyad='" + TxtAdSoyad.Text + "' where Id='" + TxtId.Text + "'", conn);
                 adp.Fill(tbl);
                 conn.Close();
@@ -141,7 +161,7 @@ namespace Otomasyon
             try
             {
                 conn.Open();
-                DataTable tbl = new DataTable();
+                System.Data.DataTable tbl = new System.Data.DataTable();
                 SqlDataAdapter adp = new SqlDataAdapter("Delete from TblSorun  where Id='" + TxtId.Text + "'", conn);
                 adp.Fill(tbl);
                 conn.Close();
@@ -167,7 +187,7 @@ namespace Otomasyon
             try
             {
                 conn.Open();
-                DataTable tbl = new DataTable();
+                System.Data.DataTable tbl = new System.Data.DataTable();
                 SqlDataAdapter adp = new SqlDataAdapter("select TblSorun.Id,UnvanAdi,Tarih,Sorun,Dahili,Cozum from TblSorun inner join TblUnvan on TblSorun.UnvanId=TblUnvan.ID  where  Tarih='" + TxtDate.Text + "'", conn);
                 adp.Fill(tbl);
                 conn.Close();
@@ -219,7 +239,7 @@ namespace Otomasyon
             //cell_style.Format = "C2";    
             //dataGridView1.Columns[0].DefaultCellStyle = cell_style;
             dataGridView1styleOlustur();
-            GrdPersonelStyleOlustur();       
+            GrdPersonelStyleOlustur();
         }
 
         private void GrdPersonelStyleOlustur()
@@ -257,12 +277,12 @@ namespace Otomasyon
             else
                 label11.Text = "";
         }
-        public static DataTable exceldata(string filePath)
+        public static System.Data.DataTable exceldata(string filePath)
         {
             try
             {
                 SqlConnection conn = new SqlConnection("Data Source=MUTRF3240VYQ; Initial Catalog=VDKOtomasyon; User Id=.; password=Marmara23");
-                DataTable dtexcel = new DataTable();
+                System.Data.DataTable dtexcel = new System.Data.DataTable();
                 bool hasHeaders = false;
                 string HDR = hasHeaders ? "Yes" : "No";
                 string strConn;
@@ -272,7 +292,7 @@ namespace Otomasyon
                     strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + filePath + ";Extended Properties=\"Excel 8.0;HDR=" + HDR + ";IMEX=0\"";
                 OleDbConnection connect = new OleDbConnection(strConn);
                 connect.Open();
-                DataTable schemaTable = connect.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
+                System.Data.DataTable schemaTable = connect.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
                 DataRow schemaRow = schemaTable.Rows[0];
                 string sheet = schemaRow["TABLE_NAME"].ToString();
                 if (!sheet.EndsWith("_"))
@@ -318,7 +338,7 @@ namespace Otomasyon
             try
             {
                 conn.Open();
-                DataTable tbl = new DataTable();
+                System.Data.DataTable tbl = new System.Data.DataTable();
                 SqlDataAdapter adptr = new SqlDataAdapter("select ID,AdSoyad,Unvani,GorevYeri from TblCalisan", conn);
                 adptr.Fill(tbl);
                 conn.Close();
@@ -370,7 +390,7 @@ namespace Otomasyon
             try
             {
                 conn.Open();
-                DataTable tbl = new DataTable();
+                System.Data.DataTable tbl = new System.Data.DataTable();
                 SqlDataAdapter adp = new SqlDataAdapter("Update TblCalisan set AdSoyad='" + TxtPrsAdSoyadi.Text + "' ,Unvani='" + cmbPrsUnvan.Text + "',GorevYeri='" + TxtPrsGorevYeri.Text + "' where Id='" + TxtPrsId.Text + "'", conn);
                 adp.Fill(tbl);
                 conn.Close();
@@ -392,7 +412,7 @@ namespace Otomasyon
             try
             {
                 conn.Open();
-                DataTable tbl = new DataTable();
+                System.Data.DataTable tbl = new System.Data.DataTable();
                 SqlDataAdapter adp = new SqlDataAdapter("Delete from TblCalisan  where Id='" + TxtPrsId.Text + "'", conn);
                 adp.Fill(tbl);
                 conn.Close();
@@ -453,12 +473,12 @@ namespace Otomasyon
                 label11.Text = "";
         }
 
-        private static DataTable excelturnike(string path)
+        private static System.Data.DataTable excelturnike(string path)
         {
             try
             {
                 SqlConnection conn = new SqlConnection("Data Source=MUTRF3240VYQ; Initial Catalog=VDKOtomasyon; User Id=.; password=Marmara23");
-                DataTable dtexcel = new DataTable();
+                System.Data.DataTable dtexcel = new System.Data.DataTable();
                 bool hasHeaders = false;
                 string HDR = hasHeaders ? "Yes" : "No";
                 string strConn;
@@ -468,7 +488,7 @@ namespace Otomasyon
                     strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + path + ";Extended Properties=\"Excel 8.0;HDR=" + HDR + ";IMEX=0\"";
                 OleDbConnection connect = new OleDbConnection(strConn);
                 connect.Open();
-                DataTable schemaTable = connect.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
+                System.Data.DataTable schemaTable = connect.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
                 DataRow schemaRow = schemaTable.Rows[0];
                 string sheet = schemaRow["TABLE_NAME"].ToString();
                 if (!sheet.EndsWith("_"))
@@ -490,7 +510,7 @@ namespace Otomasyon
                         String GirisCikisDurumu = dtexcel.Rows[i]["Giris/Cikis Durumu"].ToString();
                         String OlayTanim = dtexcel.Rows[i]["Olay Tanimi"].ToString();
 
-                        SqlCommand kmtselect = new SqlCommand("Select COUNT(*) FROM  TblGirisCikis where  KartNo= '" + KartNo + "' and TarihSaat = Convert(datetime,'" + TarihSaat + "',103) AND OlayTanim='"+OlayTanim+"'", conn);
+                        SqlCommand kmtselect = new SqlCommand("Select COUNT(*) FROM  TblGirisCikis where  KartNo= '" + KartNo + "' and TarihSaat = Convert(datetime,'" + TarihSaat + "',103) AND OlayTanim='" + OlayTanim + "'", conn);
                         //if records exists
                         string rowsAffected = kmtselect.ExecuteScalar().ToString();
 
@@ -521,7 +541,7 @@ namespace Otomasyon
             try
             {
                 conn.Open();
-                DataTable tbl = new DataTable();
+                System.Data.DataTable tbl = new System.Data.DataTable();
                 SqlDataAdapter adptr = new SqlDataAdapter("select * From V_TurnikeGirisCikis ", conn);
                 adptr.Fill(tbl);
                 conn.Close();
@@ -552,7 +572,7 @@ namespace Otomasyon
             cmd.Parameters.AddWithValue("@deg", tarih);
             cmd.Parameters.AddWithValue("@durum", durum);
             cmd.Parameters.AddWithValue("@GorevYeri", GorevYeri);
-            DataTable dt = new DataTable();
+            System.Data.DataTable dt = new System.Data.DataTable();
             SqlDataAdapter adap = new SqlDataAdapter(cmd);
             try
             {
@@ -605,7 +625,7 @@ namespace Otomasyon
             SqlCommand cmd = new SqlCommand("TurnikeGirisCikis", conn);
             cmd.CommandType = CommandType.Text;
             cmd.CommandType = CommandType.StoredProcedure;
-            DataTable dt = new DataTable();
+            System.Data.DataTable dt = new System.Data.DataTable();
             SqlDataAdapter adap = new SqlDataAdapter(cmd);
             adap.Fill(dt);
             conn.Close();
@@ -617,56 +637,95 @@ namespace Otomasyon
             ExceleAktar(GrdFiltreli);
         }
 
+        //private void ExceleAktar(DataGridView grd)
+        //{
+        //    Microsoft.Office.Interop.Excel.Application excel = new Microsoft.Office.Interop.Excel.Application();
+
+        //    excel.Visible = true; //Daha fazla bilgi için : www.gorselprogramlama.com
+
+        //    Microsoft.Office.Interop.Excel.Workbook workbook = excel.Workbooks.Add(System.Reflection.Missing.Value);
+
+
+        //    Microsoft.Office.Interop.Excel.Worksheet sheet1 = (Microsoft.Office.Interop.Excel.Worksheet)workbook.Sheets[1];
+
+
+        //    int StartCol = 1;
+
+        //    int StartRow = 1; //Daha fazla bilgi için : www.gorselprogramlama.com
+
+        //    for (int j = 0; j < grd.Columns.Count; j++)
+        //    {
+
+        //        Microsoft.Office.Interop.Excel.Range myRange = (Microsoft.Office.Interop.Excel.Range)sheet1.Cells[StartRow, StartCol + j];
+
+        //        myRange.Value2 = grd.Columns[j].HeaderText;
+
+        //    }
+
+        //    StartRow++;
+
+        //    for (int i = 0; i < grd.Rows.Count; i++)
+        //    {
+
+        //        for (int j = 0; j < grd.Columns.Count; j++)
+        //        { //Daha fazla bilgi için : www.gorselprogramlama.com
+
+        //            try
+        //            {
+        //                Microsoft.Office.Interop.Excel.Range myRange = (Microsoft.Office.Interop.Excel.Range)sheet1.Cells[StartRow + i, StartCol + j];
+        //                myRange.Value2 = grd[j, i].Value == null ? "" : grd[j, i].Value;
+
+        //            }
+        //            catch
+        //            {
+        //                ;
+        //            }
+
+        //        } //Daha fazla bilgi için : www.gorselprogramlama.com
+
+        //    }
+        //    string name = "C:\\Users\\arzu.kurban\\Documents\\MyExcelTestTest.xls";
+        //    workbook.SaveAs(name, Microsoft.Office.Interop.Excel.XlFileFormat.xlWorkbookNormal, System.Reflection.Missing.Value, System.Reflection.Missing.Value, false, false, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlShared, false, false, System.Reflection.Missing.Value, System.Reflection.Missing.Value, System.Reflection.Missing.Value);
+
+        //}
+
         private void ExceleAktar(DataGridView grd)
         {
-            Microsoft.Office.Interop.Excel.Application excel = new Microsoft.Office.Interop.Excel.Application();
+            grd.AllowUserToAddRows = false;
+            System.Globalization.CultureInfo dil = System.Threading.Thread.CurrentThread.CurrentCulture;
+            System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-us");
+            Microsoft.Office.Interop.Excel.Application Tablo = new Microsoft.Office.Interop.Excel.Application();
+            Microsoft.Office.Interop.Excel.Workbook kitap = Tablo.Workbooks.Add(true);
+            Microsoft.Office.Interop.Excel.Worksheet sayfa = (Microsoft.Office.Interop.Excel.Worksheet)Tablo.ActiveSheet;
+            System.Threading.Thread.CurrentThread.CurrentCulture = dil;
+            Tablo.Visible = true;
+            sayfa = (Worksheet)kitap.ActiveSheet;
+            System.Threading.Thread.Sleep(10000);
 
-            excel.Visible = true; //Daha fazla bilgi için : www.gorselprogramlama.com
 
-            Microsoft.Office.Interop.Excel.Workbook workbook = excel.Workbooks.Add(System.Reflection.Missing.Value);
-
-            Microsoft.Office.Interop.Excel.Worksheet sheet1 = (Microsoft.Office.Interop.Excel.Worksheet)workbook.Sheets[1];
-
-            int StartCol = 1;
-
-            int StartRow = 1; //Daha fazla bilgi için : www.gorselprogramlama.com
-
-            for (int j = 0; j < grd.Columns.Count; j++)
+            try
             {
-
-                Microsoft.Office.Interop.Excel.Range myRange = (Microsoft.Office.Interop.Excel.Range)sheet1.Cells[StartRow, StartCol + j];
-
-                myRange.Value2 = grd.Columns[j].HeaderText;
-
+                for (int i = 0; i < grd.Rows.Count; i++)
+                {
+                    for (int j = 0; j < grd.ColumnCount; j++)
+                    {
+                        if (i == 0)
+                        {
+                            Tablo.Cells[1, j + 1] = grd.Columns[j].HeaderText;
+                        }
+                        Tablo.Cells[i + 2, j + 1] = grd.Rows[i].Cells[j].Value.ToString();
+                    }
+                }
+                Tablo.Visible = true;
+                Tablo.UserControl = true;
+            }
+            catch (Exception)
+            {
+                ;
             }
 
-            StartRow++;
 
-            for (int i = 0; i < grd.Rows.Count; i++)
-            {
 
-                for (int j = 0; j < grd.Columns.Count; j++)
-                { //Daha fazla bilgi için : www.gorselprogramlama.com
-
-                    try
-                    {
-
-                        Microsoft.Office.Interop.Excel.Range myRange = (Microsoft.Office.Interop.Excel.Range)sheet1.Cells[StartRow + i, StartCol + j];
-
-                        myRange.Value2 = grd[j, i].Value == null ? "" : grd[j, i].Value;
-
-                    }
-
-                    catch
-                    {
-
-                        ;
-
-                    }
-
-                } //Daha fazla bilgi için : www.gorselprogramlama.com
-
-            }
         }
 
         private void GrdFiltreli_KeyDown(object sender, KeyEventArgs e)
@@ -707,7 +766,7 @@ namespace Otomasyon
         private void btnTurnikeFlt_Click(object sender, EventArgs e)
         {
             conn.Open();
-            DataTable tbl = new DataTable();
+            System.Data.DataTable tbl = new System.Data.DataTable();
             String kisit = "";
 
             if (TxtTarihFltPck.Text != " ")
@@ -716,7 +775,8 @@ namespace Otomasyon
                 String tarihflt = String.Format("{0:yyyy-MM-dd}", date);
                 kisit += " Tarih>='" + tarihflt + "'";
             }
-            if(TxtAdSoyadFlt.Text!=""){
+            if (TxtAdSoyadFlt.Text != "")
+            {
                 kisit += " and AdSoyad like '%" + TxtAdSoyadFlt.Text + "%'";
             }
             if (TxtUnvanFlt.Text != "")
@@ -727,7 +787,7 @@ namespace Otomasyon
             {
                 kisit += " and Cihaz like '%" + txtCihazFlt.Text + "%'";
             }
-           
+
             if (TxtGirisCikisFlt.Text != "")
             {
                 kisit += "and GirisCikisDurumu like '%" + TxtGirisCikisFlt.Text + "%'";
@@ -743,7 +803,7 @@ namespace Otomasyon
             else
             {
             }
-            SqlDataAdapter adptr = new SqlDataAdapter("select * From V_TurnikeGirisCikis where "+kisit+"", conn);
+            SqlDataAdapter adptr = new SqlDataAdapter("select * From V_TurnikeGirisCikis where " + kisit + "", conn);
             adptr.Fill(tbl);
             conn.Close();
             GrdTurnike.DataSource = tbl;
